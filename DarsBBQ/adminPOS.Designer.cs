@@ -129,6 +129,7 @@
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(184, 27);
             textBox1.TabIndex = 1;
+            textBox1.TextChanged += textBox1_TextChanged;
             // 
             // label1
             // 
@@ -191,6 +192,7 @@
             // comboBox2
             // 
             comboBox2.FormattingEnabled = true;
+            comboBox2.Items.AddRange(new object[] { "Food", "Drinks" });
             comboBox2.Location = new Point(314, 87);
             comboBox2.Name = "comboBox2";
             comboBox2.Size = new Size(138, 28);

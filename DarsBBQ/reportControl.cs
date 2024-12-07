@@ -100,7 +100,7 @@ namespace DarsBBQ
                      JOIN 
                         transactionitems ti
                      ON 
-                        td.InvoiceNumber = ti.InvoiceNumber
+                        td.itemID = ti.itemID
                      WHERE 
                         td.TransactionDateTime BETWEEN @StartDate AND @EndDate";
 

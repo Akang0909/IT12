@@ -49,19 +49,33 @@ namespace DarsBBQ
         }
 
         // Method to add product panels dynamically
-        public void AddProductPanels()
+        public void AddProductPanels(string searchTerm = "")
         {
-            flowLayoutPanel1.Controls.Clear();
+            flowLayoutPanel1.Controls.Clear();  // Clear existing panels
+
+            List<Panel> productPanels = new List<Panel>();  // Store the panels for reordering
 
             try
             {
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
-                    string query = "SELECT * FROM products";
+                    // If searchTerm is provided, filter products
+                    string query = string.IsNullOrEmpty(searchTerm)
+                        ? "SELECT * FROM products"  // Load all products if no search term
+                        : "SELECT * FROM products WHERE name LIKE @searchTerm";  // Filter by name
+
                     MySqlDataAdapter adapter = new MySqlDataAdapter(query, conn);
+
+                    // Add search term parameter to avoid SQL injection
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        adapter.SelectCommand.Parameters.AddWithValue("@searchTerm", "%" + searchTerm + "%");
+                    }
+
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
 
+                    // Loop through the filtered or full list of products
                     foreach (DataRow row in dt.Rows)
                     {
                         // Create the outer panel
@@ -91,7 +105,7 @@ namespace DarsBBQ
                             SizeMode = PictureBoxSizeMode.Zoom
                         };
 
-                        // Load the image from the databaseBTN
+                        // Load the image from the database
                         if (row["image"] != DBNull.Value)
                         {
                             byte[] imageData = (byte[])row["image"];
@@ -135,13 +149,36 @@ namespace DarsBBQ
                             ForeColor = Color.Gray,
                             TextAlign = ContentAlignment.MiddleLeft
                         };
-                        productPanel.Controls.Add(lblProductQuantity);
 
+                        productPanel.Controls.Add(lblProductQuantity);
                         productPanel.Controls.Add(lblProductName);
                         productPanel.Controls.Add(lblProductPrice);
 
-                        // Add the product panel to the flowLayoutPanel
-                        flowLayoutPanel1.Controls.Add(productPanel);
+                        // Add the product panel to the list (not directly to the FlowLayoutPanel)
+                        productPanels.Add(productPanel);
+                    }
+
+                    // After all panels are created, apply sorting based on the search term
+                    if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        // Order panels: Place matching products at the top
+                        var searchResults = productPanels
+                            .Where(panel => panel.Controls.OfType<Label>()
+                            .Any(lbl => lbl.Text.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                            .ToList();
+
+                        var nonSearchResults = productPanels
+                            .Except(searchResults)
+                            .ToList();
+
+                        // First add the search results, then the non-search results
+                        productPanels = searchResults.Concat(nonSearchResults).ToList();
+                    }
+
+                    // Add all panels to the FlowLayoutPanel in the sorted order
+                    foreach (var panel in productPanels)
+                    {
+                        flowLayoutPanel1.Controls.Add(panel);
                     }
                 }
             }
@@ -150,6 +187,7 @@ namespace DarsBBQ
                 MessageBox.Show($"Error loading products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
 
 
@@ -438,22 +476,41 @@ namespace DarsBBQ
                     {
                         // Check stock levels before proceeding
                         string checkStockQuery = @"
-SELECT name, quantity 
-FROM stock_in 
-WHERE name = @StockName;";
+        SELECT name, quantity 
+        FROM stock_in 
+        WHERE name = @StockName;";
 
-                        var stockDeductionRules = new Dictionary<string, Dictionary<string, int>>()
-                {
-                    { "Chiken Rice", new Dictionary<string, int> { { "Chiken", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Pork Rice", new Dictionary<string, int> { { "Pork", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Rice Only", new Dictionary<string, int> { { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Pork Only", new Dictionary<string, int> { { "Pork", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Chiken Only", new Dictionary<string, int> { { "Chiken", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Pork Refill", new Dictionary<string, int> { { "Pork", 1 } } },
-                    { "Chiken Refill", new Dictionary<string, int> { { "Chiken", 1 } } },
-                    { "Rice Refill", new Dictionary<string, int> { { "Rice", 1 } } }
-                };
+                        // Initialize a dictionary to hold product ingredients and quantities dynamically
+                        var stockDeductionRules = new Dictionary<string, Dictionary<string, int>>();
 
+                        // Fetch product ingredients dynamically from the database
+                        string getProductIngredientsQuery = @"
+        SELECT p.product_name, i.ingredient_name, pi.quantity
+        FROM product_ingredients pi
+        JOIN products p ON pi.product_id = p.product_id
+        JOIN ingredients i ON pi.ingredient_id = i.ingredient_id;";
+
+                        using (MySqlCommand cmdGetIngredients = new MySqlCommand(getProductIngredientsQuery, conn))
+                        using (MySqlDataReader reader = cmdGetIngredients.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string productName = reader.GetString("product_name");
+                                string ingredientName = reader.GetString("ingredient_name");
+                                int ingredientQuantity = reader.GetInt32("quantity");
+
+                                // Add the ingredient and its quantity to the product's ingredient list
+                                if (!stockDeductionRules.ContainsKey(productName))
+                                {
+                                    stockDeductionRules[productName] = new Dictionary<string, int>();
+                                }
+
+                                // Add ingredient to the dictionary (it may overwrite if same ingredient is repeated for the same product)
+                                stockDeductionRules[productName][ingredientName] = ingredientQuantity;
+                            }
+                        }
+
+                        // Loop through each order row to check stock levels and deduct stock
                         foreach (DataGridViewRow row in dgvOrderList.Rows)
                         {
                             if (row.Cells["Column1"].Value != null && row.Cells["Column2"].Value != null)
@@ -463,6 +520,7 @@ WHERE name = @StockName;";
 
                                 if (stockDeductionRules.ContainsKey(productName))
                                 {
+                                    // Check the stock for each ingredient in the product
                                     foreach (var component in stockDeductionRules[productName])
                                     {
                                         using (MySqlCommand cmdCheckStock = new MySqlCommand(checkStockQuery, conn, transaction))
@@ -509,17 +567,15 @@ WHERE name = @StockName;";
 
                         // Insert into TransactionDetails
 
-
-                        // Rest of the code for inserting transaction items and updating stock
                         string transactionItemsQuery = @"
-INSERT INTO transactionitems (InvoiceNumber, ProductName, Quantity, TotalPrice)
-VALUES (@InvoiceNumber, @ProductName, @Quantity, @TotalPrice);";
+        INSERT INTO transactionitems (InvoiceNumber, ProductName, Quantity, TotalPrice)
+        VALUES (@InvoiceNumber, @ProductName, @Quantity, @TotalPrice);";
 
                         string updateStockQuery = @"
-UPDATE stock_in 
-SET quantity = quantity - @Deduction, 
-    date_modified = @CurrentDate
-WHERE name = @StockName;";
+        UPDATE stock_in 
+        SET quantity = quantity - @Deduction, 
+            date_modified = @CurrentDate
+        WHERE name = @StockName;";
 
                         foreach (DataGridViewRow row in dgvOrderList.Rows)
                         {
@@ -533,6 +589,7 @@ WHERE name = @StockName;";
                                 {
                                     decimal itemTotalPrice = price * quantity;
 
+                                    // Insert transaction item
                                     using (MySqlCommand cmdItems = new MySqlCommand(transactionItemsQuery, conn, transaction))
                                     {
                                         cmdItems.Parameters.AddWithValue("@InvoiceNumber", invoiceNumber);
@@ -542,6 +599,7 @@ WHERE name = @StockName;";
                                         cmdItems.ExecuteNonQuery();
                                     }
 
+                                    // Update stock levels based on product ingredients
                                     if (stockDeductionRules.ContainsKey(productName))
                                     {
                                         foreach (var component in stockDeductionRules[productName])
@@ -558,17 +616,17 @@ WHERE name = @StockName;";
                                 }
                             }
                         }
+
+                        // Retrieve the latest itemID for transaction details
                         int latestItemID = 0;
                         string query = "SELECT itemID FROM transactionitems ORDER BY itemID DESC LIMIT 1;";
                         using (MySqlCommand command = new MySqlCommand(query, conn))
                         {
-                            object result = command.ExecuteScalar(); // Fetches a single value
+                            object result = command.ExecuteScalar();
 
                             if (result != null)
                             {
                                 latestItemID = Convert.ToInt32(result);
-                                Console.WriteLine("Latest itemID: " + latestItemID);
-                                // Save `latestItemID` as a variable for further processing
                             }
                             else
                             {
@@ -576,9 +634,10 @@ WHERE name = @StockName;";
                             }
                         }
 
+                        // Insert transaction details
                         string transactionDetailsQuery = @"
-                        INSERT INTO transactiondetails (itemID,InvoiceNumber, TransactionDateTime, PaymentMethod, TotalAmount, cash, ReferenceId)
-                        VALUES (@itemID, @InvoiceNumber, @TransactionDateTime, @PaymentMethod, @TotalAmount, @Cash, @ReferenceId);";
+        INSERT INTO transactiondetails (itemID, InvoiceNumber, TransactionDateTime, PaymentMethod, TotalAmount, cash, ReferenceId)
+        VALUES (@itemID, @InvoiceNumber, @TransactionDateTime, @PaymentMethod, @TotalAmount, @Cash, @ReferenceId);";
 
                         using (MySqlCommand cmdDetails = new MySqlCommand(transactionDetailsQuery, conn, transaction))
                         {
@@ -611,6 +670,7 @@ WHERE name = @StockName;";
                         MessageBox.Show("Error saving transaction: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+
             }
         }
 
@@ -838,6 +898,13 @@ WHERE name = @StockName;";
         {
 
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            string searchTerm = textBox1.Text.Trim(); // Get the search term from the text box
+            AddProductPanels(searchTerm); // Call the method with the search term
+        }
+
     }
 }
 
