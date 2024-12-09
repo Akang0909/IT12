@@ -77,13 +77,14 @@
             // 
             // dgvOrderList
             // 
+            dgvOrderList.AllowUserToAddRows = false;
             dgvOrderList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvOrderList.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3, Column4, Column5 });
             dgvOrderList.Location = new Point(458, 71);
             dgvOrderList.Name = "dgvOrderList";
             dgvOrderList.RowHeadersVisible = false;
             dgvOrderList.RowHeadersWidth = 55;
-            dgvOrderList.Size = new Size(611, 458);
+            dgvOrderList.Size = new Size(608, 458);
             dgvOrderList.TabIndex = 4;
             dgvOrderList.CellContentClick += dgvOrderList_CellContentClick;
             dgvOrderList.RowsAdded += dgvOrderList_RowsAdded;

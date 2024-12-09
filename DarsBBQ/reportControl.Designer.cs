@@ -44,6 +44,7 @@
             // 
             // dgvSalesReport
             // 
+            dgvSalesReport.AllowUserToAddRows = false;
             dgvSalesReport.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvSalesReport.Location = new Point(0, 230);
             dgvSalesReport.Name = "dgvSalesReport";

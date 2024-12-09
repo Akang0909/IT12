@@ -96,7 +96,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(554, 288);
+            label1.Location = new Point(554, 253);
             label1.Name = "label1";
             label1.Size = new Size(53, 20);
             label1.TabIndex = 5;
@@ -104,9 +104,9 @@
             // 
             // txtSearchProduct
             // 
-            txtSearchProduct.Location = new Point(625, 285);
+            txtSearchProduct.Location = new Point(554, 280);
             txtSearchProduct.Name = "txtSearchProduct";
-            txtSearchProduct.Size = new Size(160, 27);
+            txtSearchProduct.Size = new Size(199, 27);
             txtSearchProduct.TabIndex = 6;
             txtSearchProduct.TextChanged += txtSearchProduct_TextChanged;
             // 

@@ -51,6 +51,7 @@
             // 
             // dgvUsers
             // 
+            dgvUsers.AllowUserToAddRows = false;
             dgvUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvUsers.Location = new Point(0, 225);
             dgvUsers.Name = "dgvUsers";

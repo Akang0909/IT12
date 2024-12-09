@@ -52,7 +52,6 @@ namespace DarsBBQ
         public void AddProductPanels(string searchTerm = "")
         {
             flowLayoutPanel1.Controls.Clear();  // Clear existing panels
-
             List<Panel> productPanels = new List<Panel>();  // Store the panels for reordering
 
             try
@@ -78,15 +77,23 @@ namespace DarsBBQ
                     // Loop through the filtered or full list of products
                     foreach (DataRow row in dt.Rows)
                     {
+                        // Fetch product status
+                        string productStatus = row["status"].ToString(); // Assume "Available" or "Out of Stock"
+
                         // Create the outer panel
                         Panel productPanel = new Panel
                         {
                             Size = new Size(213, 255),
                             BorderStyle = BorderStyle.FixedSingle,
-                            BackColor = Color.LightGray
+                            BackColor = Color.LightGray,
+                            Enabled = productStatus == "Available" // Disable if "Out of Stock"
                         };
 
-                        productPanel.Click += ProductPanel_Click; // Attach the click event handler
+                        // Attach the click event handler only if the panel is enabled
+                        if (productPanel.Enabled)
+                        {
+                            productPanel.Click += ProductPanel_Click;
+                        }
 
                         // Create the inner panel
                         Panel innerPanel = new Panel
@@ -140,17 +147,18 @@ namespace DarsBBQ
                             TextAlign = ContentAlignment.MiddleRight
                         };
 
-                        Label lblProductQuantity = new Label
+                        // Add the availability label
+                        Label lblProductAvailability = new Label
                         {
-                            Text = "Quantity:", // Adjusted to display the quantity
-                            Location = new Point(5, 220), // Position directly below the product name
+                            Text = $"Availability: {productStatus}",
+                            Location = new Point(5, 220),
                             AutoSize = true,
                             Font = new Font("Arial", 9, FontStyle.Regular),
-                            ForeColor = Color.Gray,
+                            ForeColor = productStatus == "Available" ? Color.Green : Color.Red,
                             TextAlign = ContentAlignment.MiddleLeft
                         };
 
-                        productPanel.Controls.Add(lblProductQuantity);
+                        productPanel.Controls.Add(lblProductAvailability);
                         productPanel.Controls.Add(lblProductName);
                         productPanel.Controls.Add(lblProductPrice);
 
@@ -187,6 +195,7 @@ namespace DarsBBQ
                 MessageBox.Show($"Error loading products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
 
 
@@ -319,6 +328,19 @@ namespace DarsBBQ
                 {
                     // Remove the selected row from the DataGridView
                     dgvOrderList.Rows.RemoveAt(e.RowIndex);
+
+                    if (dgvOrderList.Rows.Count == 0)
+                    {
+                        lblTotalPrice.Text = "0.00"; // Reset total price
+                        lblChange.Text = "0.00"; // Reset change
+                        txtCash.Clear();
+                        cmbPaymentMethod.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        UpdateTotalPrice(); // Update total price for remaining rows
+                        //UpdateChange(); // Update change based on updated total
+                    }
 
                     MessageBox.Show("Order deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -474,96 +496,64 @@ namespace DarsBBQ
                 {
                     try
                     {
-                        // Check stock levels before proceeding
-                        string checkStockQuery = @"
-        SELECT name, quantity 
-        FROM stock_in 
-        WHERE name = @StockName;";
+                        // Check stock availability for the entire order first
+                        bool isStockAvailable = true;
+                        var stockDeductionRules = new Dictionary<string, Dictionary<string, int>>()
+                {
+                    { "Chiken Rice", new Dictionary<string, int> { { "Chiken", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Pork Rice", new Dictionary<string, int> { { "Pork", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Rice Only", new Dictionary<string, int> { { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Pork Only", new Dictionary<string, int> { { "Pork", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Chiken Only", new Dictionary<string, int> { { "Chiken", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Pork Refill", new Dictionary<string, int> { { "Pork", 1 } } },
+                    { "Chiken Refill", new Dictionary<string, int> { { "Chiken", 1 } } },
+                    { "Rice Refill", new Dictionary<string, int> { { "Rice", 1 } } }
+                };
 
-                        // Initialize a dictionary to hold product ingredients and quantities dynamically
-                        var stockDeductionRules = new Dictionary<string, Dictionary<string, int>>();
-
-                        // Fetch product ingredients dynamically from the database
-                        string getProductIngredientsQuery = @"
-        SELECT p.product_name, i.ingredient_name, pi.quantity
-        FROM product_ingredients pi
-        JOIN products p ON pi.product_id = p.product_id
-        JOIN ingredients i ON pi.ingredient_id = i.ingredient_id;";
-
-                        using (MySqlCommand cmdGetIngredients = new MySqlCommand(getProductIngredientsQuery, conn))
-                        using (MySqlDataReader reader = cmdGetIngredients.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string productName = reader.GetString("product_name");
-                                string ingredientName = reader.GetString("ingredient_name");
-                                int ingredientQuantity = reader.GetInt32("quantity");
-
-                                // Add the ingredient and its quantity to the product's ingredient list
-                                if (!stockDeductionRules.ContainsKey(productName))
-                                {
-                                    stockDeductionRules[productName] = new Dictionary<string, int>();
-                                }
-
-                                // Add ingredient to the dictionary (it may overwrite if same ingredient is repeated for the same product)
-                                stockDeductionRules[productName][ingredientName] = ingredientQuantity;
-                            }
-                        }
 
                         // Loop through each order row to check stock levels and deduct stock
                         foreach (DataGridViewRow row in dgvOrderList.Rows)
                         {
-                            if (row.Cells["Column1"].Value != null && row.Cells["Column2"].Value != null)
+                            if (row.Cells["Column1"].Value != null && row.Cells["Column2"].Value != null && row.Cells["Column3"].Value != null)
                             {
                                 string productName = row.Cells["Column1"].Value.ToString();
                                 int quantity = Convert.ToInt32(row.Cells["Column2"].Value);
 
                                 if (stockDeductionRules.ContainsKey(productName))
                                 {
-                                    // Check the stock for each ingredient in the product
                                     foreach (var component in stockDeductionRules[productName])
                                     {
-                                        using (MySqlCommand cmdCheckStock = new MySqlCommand(checkStockQuery, conn, transaction))
+                                        // Check current stock before deducting
+                                        string checkStockQuery = "SELECT quantity FROM stock_in WHERE name = @StockName";
+                                        using (MySqlCommand cmdCheckStock = new MySqlCommand(checkStockQuery, conn))
                                         {
                                             cmdCheckStock.Parameters.AddWithValue("@StockName", component.Key);
-                                            using (MySqlDataReader reader = cmdCheckStock.ExecuteReader())
-                                            {
-                                                if (reader.Read())
-                                                {
-                                                    int availableStock = reader.GetInt32("quantity");
-                                                    int requiredStock = quantity * component.Value;
+                                            var currentStock = cmdCheckStock.ExecuteScalar();
+                                            int currentQuantity = Convert.ToInt32(currentStock);
 
-                                                    if (availableStock < requiredStock)
-                                                    {
-                                                        reader.Close();
-                                                        transaction.Rollback();
-                                                        MessageBox.Show(
-                                                            $"Insufficient stock for {component.Key}. Required: {requiredStock}, Available: {availableStock}.",
-                                                            "Error",
-                                                            MessageBoxButtons.OK,
-                                                            MessageBoxIcon.Warning
-                                                        );
-                                                        return;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    reader.Close();
-                                                    transaction.Rollback();
-                                                    MessageBox.Show(
-                                                        $"Stock item {component.Key} not found in inventory.",
-                                                        "Error",
-                                                        MessageBoxButtons.OK,
-                                                        MessageBoxIcon.Warning
-                                                    );
-                                                    return;
-                                                }
+                                            // If stock is less than required quantity, set isStockAvailable to false and break out of the loop
+                                            if (currentQuantity < quantity * component.Value)
+                                            {
+                                                isStockAvailable = false;
+                                                MessageBox.Show($"Insufficient stock for {component.Key}.", "Stock Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                                break;
                                             }
                                         }
                                     }
                                 }
+
+                                if (!isStockAvailable)
+                                {
+                                    break; // Stop processing if stock is not sufficient
+                                }
                             }
                         }
+
+                        if (!isStockAvailable)
+                        {
+                            return; // If not enough stock, stop the transaction process
+                        }
+
 
                         // Insert into TransactionDetails
 
@@ -811,7 +801,6 @@ namespace DarsBBQ
                 System.Windows.Forms.MessageBox.Show("Error generating receipt: " + ex.Message, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
-
 
 
 

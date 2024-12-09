@@ -111,48 +111,61 @@ namespace DarsBBQ
 
             try
             {
-                // Ensure all required fields are filled
-                if (!string.IsNullOrEmpty(txtProductName.Text) &&
-                    cmbCategory.SelectedValue != null &&
-                    !string.IsNullOrEmpty(txtPrice.Text) &&
-                    cmbStatus.SelectedItem != null &&
-                    productPicture.Image != null) // Ensure an image is loaded
-                {
-                    // Convert the image from the PictureBox to a JPEG byte array
-                    ms = new MemoryStream();
-                    productPicture.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg); // Save as JPEG
-                    byte[] imageData = ms.ToArray();
-
-                    // Prepare the SQL query to insert the product
-                    string query = "INSERT INTO products (name, sr_no, price, status, image) " +
-                                   "VALUES (@name, @category, @price, @status, @image)";
-
-                    cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.Add("@name", MySqlDbType.VarChar, 100);
-                    cmd.Parameters.Add("@category", MySqlDbType.Int32);
-                    cmd.Parameters.Add("@price", MySqlDbType.Decimal);
-                    cmd.Parameters.Add("@status", MySqlDbType.VarChar, 50);
-                    cmd.Parameters.Add("@image", MySqlDbType.Blob);
-
-                    cmd.Parameters["@name"].Value = txtProductName.Text.Trim();
-                    cmd.Parameters["@category"].Value = cmbCategory.SelectedValue; // sr_no from ComboBox
-                    cmd.Parameters["@price"].Value = Convert.ToDecimal(txtPrice.Text.Trim());
-                    cmd.Parameters["@status"].Value = cmbStatus.SelectedItem.ToString();
-                    cmd.Parameters["@image"].Value = imageData; // Save the image as a BLOB
-
-                    conn.Open();
-                    int rowsAffected = cmd.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                    {
-                        MessageBox.Show("Product added successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        LoadProducts(); // Refresh DataGridView
-                        _adminPOS.AddProductPanels();
-                    }
-                }
-                else
+                // Validation: Ensure all required fields are filled
+                if (string.IsNullOrEmpty(txtProductName.Text) ||
+                    cmbCategory.SelectedValue == null ||
+                    string.IsNullOrEmpty(txtPrice.Text) ||
+                    cmbStatus.SelectedItem == null ||
+                    productPicture.Image == null) // Ensure an image is loaded
                 {
                     MessageBox.Show("Incomplete data!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Validation: Ensure Product Name contains only letters
+                if (!System.Text.RegularExpressions.Regex.IsMatch(txtProductName.Text.Trim(), @"^[a-zA-Z\s]+$"))
+                {
+                    MessageBox.Show("Product Name must contain only letters.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Validation: Ensure Price is a valid positive decimal number
+                if (!decimal.TryParse(txtPrice.Text.Trim(), out decimal price) || price < 0)
+                {
+                    MessageBox.Show("Price must be a positive number.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Convert the image from the PictureBox to a JPEG byte array
+                ms = new MemoryStream();
+                productPicture.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg); // Save as JPEG
+                byte[] imageData = ms.ToArray();
+
+                // Prepare the SQL query to insert the product
+                string query = "INSERT INTO products (name, sr_no, price, status, image) " +
+                               "VALUES (@name, @category, @price, @status, @image)";
+
+                cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.Add("@name", MySqlDbType.VarChar, 100);
+                cmd.Parameters.Add("@category", MySqlDbType.Int32);
+                cmd.Parameters.Add("@price", MySqlDbType.Decimal);
+                cmd.Parameters.Add("@status", MySqlDbType.VarChar, 50);
+                cmd.Parameters.Add("@image", MySqlDbType.Blob);
+
+                cmd.Parameters["@name"].Value = txtProductName.Text.Trim();
+                cmd.Parameters["@category"].Value = cmbCategory.SelectedValue; // sr_no from ComboBox
+                cmd.Parameters["@price"].Value = price; // Validated price
+                cmd.Parameters["@status"].Value = cmbStatus.SelectedItem.ToString();
+                cmd.Parameters["@image"].Value = imageData; // Save the image as a BLOB
+
+                conn.Open();
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    MessageBox.Show("Product added successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadProducts(); // Refresh DataGridView
+                    _adminPOS.AddProductPanels();
                 }
             }
             catch (Exception ex)
@@ -175,44 +188,28 @@ namespace DarsBBQ
 
 
 
+
         private void btnUpdateProduct_Click(object sender, EventArgs e)
         {
             MySqlConnection conn = new MySqlConnection(connectionString);
             MySqlCommand cmd;
-            MemoryStream ms;
 
             try
             {
-                // Check if a row is selected in the DataGridView
+                // Ensure a row is selected in the DataGridView
                 if (dtgProduct.SelectedRows.Count > 0)
                 {
                     // Ensure all required fields are filled
                     if (!string.IsNullOrEmpty(txtProductName.Text) &&
                         cmbCategory.SelectedValue != null &&
                         !string.IsNullOrEmpty(txtPrice.Text) &&
-                        cmbStatus.SelectedItem != null) // Image is optional
+                        cmbStatus.SelectedItem != null)
                     {
                         // Get the selected product ID
                         int selectedProductId = Convert.ToInt32(dtgProduct.SelectedRows[0].Cells[0].Value); // Assuming product_id is the first column
 
-                        // Convert the image from the PictureBox to a JPEG byte array, if an image is loaded
-                        byte[] imageData = null;
-                        if (productPicture.Image != null)
-                        {
-                            ms = new MemoryStream();
-                            productPicture.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg); // Save as JPEG
-                            imageData = ms.ToArray();
-                        }
-
-                        // Build the SQL query for updating the product
-                        string query = "UPDATE products SET name=@name, sr_no=@category, price=@price, status=@status";
-
-                        if (imageData != null)
-                        {
-                            query += ", image=@image"; // Add image update if it's provided
-                        }
-
-                        query += " WHERE product_id=@product_id";
+                        // Prepare the SQL query to update the product without touching the image field
+                        string query = "UPDATE products SET name=@name, sr_no=@category, price=@price, status=@status WHERE product_id=@product_id";
 
                         cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.Add("@name", MySqlDbType.VarChar, 100);
@@ -227,19 +224,13 @@ namespace DarsBBQ
                         cmd.Parameters["@status"].Value = cmbStatus.SelectedItem.ToString();
                         cmd.Parameters["@product_id"].Value = selectedProductId;
 
-                        if (imageData != null)
-                        {
-                            cmd.Parameters.Add("@image", MySqlDbType.Blob);
-                            cmd.Parameters["@image"].Value = imageData; // Save the image as a BLOB
-                        }
-
                         conn.Open();
                         int rowsAffected = cmd.ExecuteNonQuery();
 
                         if (rowsAffected > 0)
                         {
                             MessageBox.Show("Product updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            LoadProducts(); // Refresh the DataGridView
+                            LoadProducts(); // Refresh DataGridView
                         }
                         else
                         {
@@ -268,6 +259,12 @@ namespace DarsBBQ
                 }
             }
         }
+
+
+
+        // Helper method to retrieve the existing image if no new image is provided
+
+
 
 
 
