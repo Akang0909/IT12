@@ -81,6 +81,8 @@ namespace DarsBBQ
 
 
 
+
+
         // Fetch categories and bind them to the ComboBox
         private void LoadCategories()
         {

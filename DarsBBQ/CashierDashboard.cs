@@ -26,6 +26,7 @@ namespace DarsBBQ
             LoadTopSellingProduct();
             LoadTodayTransactions();
             LoadChart();
+            DisplayData();
         }
         private void LoadChart()
         {
@@ -190,6 +191,56 @@ namespace DarsBBQ
             }
         }
 
+        private void DisplayData()
+        {
+            string connectionString = "Server=localhost;Database=darsbbq;Uid=root;Pwd=;";
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                string query = "SELECT stock_in_id, name, category, quantity, date_added, date_modified FROM stock_in";
+                MySqlDataAdapter dataAdapter = new MySqlDataAdapter(query, conn);
+                DataTable dt = new DataTable();
+                dataAdapter.Fill(dt);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["date_added"] == DBNull.Value)
+                    {
+                        row["date_added"] = DateTime.Now; // Replace with default
+                    }
+
+                    if (row["date_modified"] == DBNull.Value)
+                    {
+                        row["date_modified"] = DateTime.Now; // Replace with default
+                    }
+                }
+
+                dgvCashierStocks.DataSource = dt;
+
+                // Modify column headers for better clarity
+                dgvCashierStocks.Columns["stock_in_id"].HeaderText = "Stock ID";
+                dgvCashierStocks.Columns["name"].HeaderText = "Product Name";
+                dgvCashierStocks.Columns["category"].HeaderText = "Category";
+                dgvCashierStocks.Columns["quantity"].HeaderText = "Quantity";
+                dgvCashierStocks.Columns["date_added"].HeaderText = "Date Added";
+                dgvCashierStocks.Columns["date_modified"].HeaderText = "Date Modified";
+
+                // Optional: Highlight rows with low stock
+                foreach (DataGridViewRow row in dgvCashierStocks.Rows)
+                {
+                    if (row.Cells["quantity"].Value != DBNull.Value)
+                    {
+                        int quantity = Convert.ToInt32(row.Cells["quantity"].Value);
+                        if (quantity <= 5)
+                        {
+                            row.DefaultCellStyle.BackColor = Color.Red; // Highlight in red
+                            row.DefaultCellStyle.ForeColor = Color.White; // Text color for readability
+                        }
+                    }
+                }
+            }
+        }
+
+
         // Load Today's Transactions Count
         private void LoadTodayTransactions()
         {
@@ -224,6 +275,11 @@ namespace DarsBBQ
         }
 
         private void lblTotalTransactions_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dgvCashierStocks_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }

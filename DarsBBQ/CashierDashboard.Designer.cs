@@ -28,12 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea6 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend6 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             panel1 = new Panel();
             lblTotalSales = new Label();
             label2 = new Label();
@@ -47,14 +44,16 @@
             panel4 = new Panel();
             lblTopSellingProduct = new Label();
             label5 = new Label();
-            chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             label1 = new Label();
+            dgvCashierStocks = new DataGridView();
+            label6 = new Label();
+            label7 = new Label();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)chartCashierTrends).BeginInit();
             panel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)chart2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvCashierStocks).BeginInit();
             SuspendLayout();
             // 
             // panel1
@@ -144,16 +143,16 @@
             // 
             // chartCashierTrends
             // 
-            chartArea5.Name = "ChartArea1";
-            chartCashierTrends.ChartAreas.Add(chartArea5);
-            legend5.Name = "Legend1";
-            chartCashierTrends.Legends.Add(legend5);
+            chartArea1.Name = "ChartArea1";
+            chartCashierTrends.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            chartCashierTrends.Legends.Add(legend1);
             chartCashierTrends.Location = new Point(43, 335);
             chartCashierTrends.Name = "chartCashierTrends";
-            series5.ChartArea = "ChartArea1";
-            series5.Legend = "Legend1";
-            series5.Name = "Series1";
-            chartCashierTrends.Series.Add(series5);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            chartCashierTrends.Series.Add(series1);
             chartCashierTrends.Size = new Size(470, 369);
             chartCashierTrends.TabIndex = 3;
             chartCashierTrends.Text = "chart1";
@@ -186,22 +185,6 @@
             label5.TabIndex = 2;
             label5.Text = "TOP SELLING PRODUCT";
             // 
-            // chart2
-            // 
-            chartArea6.Name = "ChartArea1";
-            chart2.ChartAreas.Add(chartArea6);
-            legend6.Name = "Legend1";
-            chart2.Legends.Add(legend6);
-            chart2.Location = new Point(537, 335);
-            chart2.Name = "chart2";
-            series6.ChartArea = "ChartArea1";
-            series6.Legend = "Legend1";
-            series6.Name = "Series1";
-            chart2.Series.Add(series6);
-            chart2.Size = new Size(471, 369);
-            chart2.TabIndex = 4;
-            chart2.Text = "chart2";
-            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -212,13 +195,45 @@
             label1.TabIndex = 5;
             label1.Text = "Dashboard";
             // 
+            // dgvCashierStocks
+            // 
+            dgvCashierStocks.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvCashierStocks.Location = new Point(559, 335);
+            dgvCashierStocks.Name = "dgvCashierStocks";
+            dgvCashierStocks.RowHeadersWidth = 51;
+            dgvCashierStocks.Size = new Size(504, 369);
+            dgvCashierStocks.TabIndex = 6;
+            dgvCashierStocks.CellContentClick += dgvCashierStocks_CellContentClick;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label6.Location = new Point(559, 303);
+            label6.Name = "label6";
+            label6.Size = new Size(148, 20);
+            label6.TabIndex = 7;
+            label6.Text = "Inventory Overview";
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label7.Location = new Point(43, 303);
+            label7.Name = "label7";
+            label7.Size = new Size(115, 20);
+            label7.TabIndex = 8;
+            label7.Text = "Product Trends\n";
+            // 
             // CashierDashboard
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Beige;
+            Controls.Add(label7);
+            Controls.Add(label6);
+            Controls.Add(dgvCashierStocks);
             Controls.Add(label1);
-            Controls.Add(chart2);
             Controls.Add(panel4);
             Controls.Add(chartCashierTrends);
             Controls.Add(panel3);
@@ -236,7 +251,7 @@
             ((System.ComponentModel.ISupportInitialize)chartCashierTrends).EndInit();
             panel4.ResumeLayout(false);
             panel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)chart2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvCashierStocks).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -247,7 +262,6 @@
         private Panel panel3;
         private System.Windows.Forms.DataVisualization.Charting.Chart chartCashierTrends;
         private Panel panel4;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private Label label2;
         private Label label3;
         private Label lblTotalSales;
@@ -257,5 +271,8 @@
         private Label lblTotalTransactions;
         private Label lblTopSellingProduct;
         private Label label1;
+        private DataGridView dgvCashierStocks;
+        private Label label6;
+        private Label label7;
     }
 }

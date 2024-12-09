@@ -526,11 +526,11 @@ namespace DarsBBQ
 
         }
 
-        private void btnAddRecipe_Click(object sender, EventArgs e)
-        {
-            AddRecipe addRecipe = new AddRecipe();
-            addRecipe.Show();
-        }
+        //private void btnAddRecipe_Click(object sender, EventArgs e)
+        //{
+        //    AddRecipe addRecipe = new AddRecipe();
+        //    addRecipe.Show();
+        //}
 
         //private void btnAddRecipe_Click(object sender, EventArgs e)
         //{

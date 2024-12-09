@@ -44,7 +44,6 @@
             label7 = new Label();
             productPicture = new PictureBox();
             btnImageProduct = new Button();
-            btnAddRecipe = new Button();
             ((System.ComponentModel.ISupportInitialize)dtgProduct).BeginInit();
             ((System.ComponentModel.ISupportInitialize)productPicture).BeginInit();
             SuspendLayout();
@@ -201,21 +200,10 @@
             btnImageProduct.UseVisualStyleBackColor = true;
             btnImageProduct.Click += btnImageProduct_Click;
             // 
-            // btnAddRecipe
-            // 
-            btnAddRecipe.Location = new Point(292, 190);
-            btnAddRecipe.Name = "btnAddRecipe";
-            btnAddRecipe.Size = new Size(199, 29);
-            btnAddRecipe.TabIndex = 25;
-            btnAddRecipe.Text = "Add Recipe";
-            btnAddRecipe.UseVisualStyleBackColor = true;
-            btnAddRecipe.Click += btnAddRecipe_Click;
-            // 
             // ProductControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(btnAddRecipe);
             Controls.Add(btnImageProduct);
             Controls.Add(productPicture);
             Controls.Add(label7);
@@ -260,6 +248,5 @@
         private PictureBox productPicture;
         private Button btnImageProduct;
         private mainForm mainForm;
-        private Button btnAddRecipe;
     }
 }
