@@ -47,8 +47,6 @@
             btnDeleteStock = new Button();
             btnEditStock = new Button();
             btnSaveStock = new Button();
-            btnFilterStock = new Button();
-            dateTimePicker2 = new DateTimePicker();
             timer1 = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
@@ -214,22 +212,6 @@
             btnSaveStock.UseVisualStyleBackColor = true;
             btnSaveStock.Click += btnSaveStock_Click;
             // 
-            // btnFilterStock
-            // 
-            btnFilterStock.Location = new Point(48, 274);
-            btnFilterStock.Name = "btnFilterStock";
-            btnFilterStock.Size = new Size(82, 29);
-            btnFilterStock.TabIndex = 50;
-            btnFilterStock.Text = "FILTER";
-            btnFilterStock.UseVisualStyleBackColor = true;
-            // 
-            // dateTimePicker2
-            // 
-            dateTimePicker2.Location = new Point(154, 276);
-            dateTimePicker2.Name = "dateTimePicker2";
-            dateTimePicker2.Size = new Size(183, 27);
-            dateTimePicker2.TabIndex = 51;
-            // 
             // timer1
             // 
             timer1.Tick += timer1_Tick;
@@ -239,8 +221,6 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Beige;
-            Controls.Add(dateTimePicker2);
-            Controls.Add(btnFilterStock);
             Controls.Add(btnNewStock);
             Controls.Add(btnDeleteStock);
             Controls.Add(btnEditStock);
@@ -288,8 +268,6 @@
         private Button btnDeleteStock;
         private Button btnEditStock;
         private Button btnSaveStock;
-        private Button btnFilterStock;
-        private DateTimePicker dateTimePicker2;
         private System.Windows.Forms.Timer timer1;
     }
 }

@@ -37,6 +37,7 @@
             btnLogin = new Button();
             txtPassword = new TextBox();
             txtUsername = new TextBox();
+            btnExit = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
@@ -45,6 +46,7 @@
             // 
             panel1.BackColor = Color.Beige;
             panel1.BorderStyle = BorderStyle.Fixed3D;
+            panel1.Controls.Add(btnExit);
             panel1.Controls.Add(pictureBox1);
             panel1.Controls.Add(label4);
             panel1.Controls.Add(label3);
@@ -100,7 +102,7 @@
             // btnLogin
             // 
             btnLogin.Font = new Font("Georgia", 10.2F);
-            btnLogin.Location = new Point(133, 435);
+            btnLogin.Location = new Point(51, 430);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(168, 44);
             btnLogin.TabIndex = 4;
@@ -127,6 +129,17 @@
             txtUsername.Name = "txtUsername";
             txtUsername.Size = new Size(342, 40);
             txtUsername.TabIndex = 1;
+            // 
+            // btnExit
+            // 
+            btnExit.Font = new Font("Georgia", 10.2F);
+            btnExit.Location = new Point(236, 430);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(157, 44);
+            btnExit.TabIndex = 7;
+            btnExit.Text = "EXIT";
+            btnExit.UseVisualStyleBackColor = true;
+            btnExit.Click += btnExit_Click;
             // 
             // Form1
             // 
@@ -155,5 +168,6 @@
         private Label label2;
         private Label label4;
         private PictureBox pictureBox1;
+        private Button btnExit;
     }
 }

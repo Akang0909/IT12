@@ -43,8 +43,6 @@
             btnPay = new Button();
             label27 = new Label();
             lblPesoSign = new Label();
-            comboBox2 = new ComboBox();
-            label29 = new Label();
             flowLayoutPanel1 = new FlowLayoutPanel();
             lblTotalPrice = new Label();
             printDialog1 = new PrintDialog();
@@ -126,18 +124,19 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(78, 85);
+            textBox1.Location = new Point(77, 85);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(184, 27);
+            textBox1.Size = new Size(201, 27);
             textBox1.TabIndex = 1;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(10, 88);
+            label1.Font = new Font("Segoe UI", 10F);
+            label1.Location = new Point(10, 85);
             label1.Name = "label1";
-            label1.Size = new Size(53, 20);
+            label1.Size = new Size(61, 23);
             label1.TabIndex = 2;
             label1.Text = "Search";
             // 
@@ -189,24 +188,6 @@
             lblPesoSign.TabIndex = 12;
             lblPesoSign.Text = "₱";
             lblPesoSign.Click += lblPesoSign_Click;
-            // 
-            // comboBox2
-            // 
-            comboBox2.FormattingEnabled = true;
-            comboBox2.Items.AddRange(new object[] { "Food", "Drinks" });
-            comboBox2.Location = new Point(314, 87);
-            comboBox2.Name = "comboBox2";
-            comboBox2.Size = new Size(138, 28);
-            comboBox2.TabIndex = 13;
-            // 
-            // label29
-            // 
-            label29.AutoSize = true;
-            label29.Location = new Point(270, 88);
-            label29.Name = "label29";
-            label29.Size = new Size(42, 20);
-            label29.TabIndex = 14;
-            label29.Text = "Filter";
             // 
             // flowLayoutPanel1
             // 
@@ -311,8 +292,6 @@
             Controls.Add(label2);
             Controls.Add(txtCash);
             Controls.Add(lblTotalPrice);
-            Controls.Add(label29);
-            Controls.Add(comboBox2);
             Controls.Add(lblPesoSign);
             Controls.Add(label27);
             Controls.Add(btnPay);
@@ -344,8 +323,6 @@
         private Button btnPay;
         private Label label27;
         private Label lblPesoSign;
-        private ComboBox comboBox2;
-        private Label label29;
         private FlowLayoutPanel flowLayoutPanel1;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;

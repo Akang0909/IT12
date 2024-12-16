@@ -99,15 +99,31 @@ namespace DarsBBQ
         private void btnLogin_MouseEnter(object sender, EventArgs e)
         {
             // Change to the hover color
-            btnLogin.BackColor = Color.FromArgb(120, 30, 30); // Adjusted lighter shade
+            //btnLogin.BackColor = Color.FromArgb(120, 30, 30); // Adjusted lighter shade
         }
 
         private void btnLogin_MouseLeave1(object sender, EventArgs e)
         {
             // Revert to white when mouse leaves
-            btnLogin.BackColor = Color.White; // Original color
+            //btnLogin.BackColor = Color.White; // Original color
         }
 
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            // Display a confirmation dialog
+            DialogResult result = MessageBox.Show(
+                "Are you sure you want to exit?",
+                "Exit Confirmation",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            // Check the user's response
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit(); // Exit the application if "Yes" is clicked
+            }
+        }
 
     }
 }

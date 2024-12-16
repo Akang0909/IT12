@@ -14,6 +14,7 @@ namespace DarsBBQ
 {
     public partial class CashierDashboard : UserControl
     {
+
         public CashierDashboard()
         {
             InitializeComponent();

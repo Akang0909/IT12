@@ -29,6 +29,7 @@ namespace DarsBBQ
         private string connectionString = "Server=localhost;Database=darsbbq;Uid=root;Pwd=;";
         // Default constructor required by the designer
         private decimal change = 0;
+
         public adminPOS()
         {
             InitializeComponent();
@@ -47,6 +48,8 @@ namespace DarsBBQ
             AddProductPanels();
 
         }
+
+
 
         // Method to add product panels dynamically
         public void AddProductPanels(string searchTerm = "")
@@ -643,10 +646,15 @@ namespace DarsBBQ
 
                         transaction.Commit();
 
+
+
                         // Save the receipt to a file and display it
                         PrintReceiptAsPdf(invoiceNumber, paymentMethod, totalAmount, cash, change);
 
                         MessageBox.Show("Transaction saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
+
                         cmbPaymentMethod.SelectedIndex = -1;
                         lblTotalPrice.Text = "0.00";
                         lblChange.Text = "0.00";
