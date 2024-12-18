@@ -97,6 +97,7 @@
             txtStockInName.Name = "txtStockInName";
             txtStockInName.Size = new Size(199, 27);
             txtStockInName.TabIndex = 22;
+            txtStockInName.TextChanged += txtStockInName_TextChanged;
             // 
             // label1
             // 
@@ -174,17 +175,17 @@
             // 
             // btnNewStock
             // 
-            btnNewStock.Location = new Point(677, 184);
+            btnNewStock.Location = new Point(677, 171);
             btnNewStock.Name = "btnNewStock";
             btnNewStock.Size = new Size(72, 29);
             btnNewStock.TabIndex = 49;
-            btnNewStock.Text = "New";
+            btnNewStock.Text = "Clear";
             btnNewStock.UseVisualStyleBackColor = true;
             btnNewStock.Click += btnNewStock_Click;
             // 
             // btnDeleteStock
             // 
-            btnDeleteStock.Location = new Point(599, 184);
+            btnDeleteStock.Location = new Point(599, 171);
             btnDeleteStock.Name = "btnDeleteStock";
             btnDeleteStock.Size = new Size(72, 29);
             btnDeleteStock.TabIndex = 48;
@@ -194,17 +195,17 @@
             // 
             // btnEditStock
             // 
-            btnEditStock.Location = new Point(521, 184);
+            btnEditStock.Location = new Point(521, 216);
             btnEditStock.Name = "btnEditStock";
-            btnEditStock.Size = new Size(72, 29);
+            btnEditStock.Size = new Size(228, 29);
             btnEditStock.TabIndex = 47;
-            btnEditStock.Text = "Update";
+            btnEditStock.Text = "Add Quantity";
             btnEditStock.UseVisualStyleBackColor = true;
             btnEditStock.Click += btnEditStock_Click;
             // 
             // btnSaveStock
             // 
-            btnSaveStock.Location = new Point(441, 184);
+            btnSaveStock.Location = new Point(521, 171);
             btnSaveStock.Name = "btnSaveStock";
             btnSaveStock.Size = new Size(72, 29);
             btnSaveStock.TabIndex = 46;

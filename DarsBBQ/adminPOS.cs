@@ -503,13 +503,13 @@ namespace DarsBBQ
                         bool isStockAvailable = true;
                         var stockDeductionRules = new Dictionary<string, Dictionary<string, int>>()
                 {
-                    { "Chiken Rice", new Dictionary<string, int> { { "Chiken", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Chicken Rice", new Dictionary<string, int> { { "Chicken", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
                     { "Pork Rice", new Dictionary<string, int> { { "Pork", 1 }, { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
                     { "Rice Only", new Dictionary<string, int> { { "Rice", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
                     { "Pork Only", new Dictionary<string, int> { { "Pork", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
-                    { "Chiken Only", new Dictionary<string, int> { { "Chiken", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
+                    { "Chicken Only", new Dictionary<string, int> { { "Chicken", 1 }, { "Spoon", 1 }, { "Cups", 1 } } },
                     { "Pork Refill", new Dictionary<string, int> { { "Pork", 1 } } },
-                    { "Chiken Refill", new Dictionary<string, int> { { "Chiken", 1 } } },
+                    { "Chicken Refill", new Dictionary<string, int> { { "Chicken", 1 } } },
                     { "Rice Refill", new Dictionary<string, int> { { "Rice", 1 } } }
                 };
 

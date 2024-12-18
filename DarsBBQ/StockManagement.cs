@@ -156,12 +156,8 @@ namespace DarsBBQ
                 // Get the stock_in_id from the selected row (assuming the column name is 'stock_in_id')
                 int stockInId = Convert.ToInt32(dataGridView1.Rows[selectedRowIndex].Cells["stock_in_id"].Value);
 
-                // Get input values from textboxes and ComboBox
-                string stockName = txtStockInName.Text;
-                string productCategory = cmbStockCategory.Text; // Get the category name directly from ComboBox
-                int quantity;
-
                 // Validate quantity input
+                int quantity;
                 if (!int.TryParse(txtQuantity.Text, out quantity))
                 {
                     MessageBox.Show("Please enter a valid quantity.");
@@ -170,16 +166,13 @@ namespace DarsBBQ
 
                 DateTime currentDate = DateTime.Now; // Get the current date
 
-                // Update query to modify the existing record based on stock_in_id
+                // Update query to modify only the quantity and date_modified based on stock_in_id
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
-                    string query = "UPDATE stock_in SET name = @stockName, category = @productCategory, " +
-                                   "quantity = @quantity, date_modified = @dateModified WHERE stock_in_id = @stockInId";
+                    string query = "UPDATE stock_in SET quantity = quantity+@quantity, date_modified = @dateModified WHERE stock_in_id = @stockInId";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
                     // Add parameters to the query
-                    cmd.Parameters.AddWithValue("@stockName", stockName);
-                    cmd.Parameters.AddWithValue("@productCategory", productCategory); // Save the category name
                     cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.Parameters.AddWithValue("@dateModified", currentDate); // Set current date as date_modified
                     cmd.Parameters.AddWithValue("@stockInId", stockInId); // Use stock_in_id to identify the record to update
@@ -188,7 +181,7 @@ namespace DarsBBQ
                     {
                         conn.Open();
                         cmd.ExecuteNonQuery();
-                        MessageBox.Show("Stock updated successfully.");
+                        MessageBox.Show("Quantity updated successfully.");
                     }
                     catch (MySqlException ex)
                     {
@@ -204,6 +197,7 @@ namespace DarsBBQ
                 MessageBox.Show("Please select a stock to edit.");
             }
         }
+
 
 
 
@@ -239,53 +233,84 @@ namespace DarsBBQ
 
         private void btnNewStock_Click(object sender, EventArgs e)
         {
+            // Clear all fields
             txtStockInName.Clear();
-            cmbStockCategory.SelectedIndex = -1; // Reset to the first item (or no selection)
+            cmbStockCategory.SelectedIndex = -1; // Reset to no selection
             txtQuantity.Clear();
             dtpStockAdded.Value = DateTime.Now;
             dtpStockModified.Value = DateTime.Now;
+
+            // Make all fields editable
+            txtStockInName.ReadOnly = false;
+            cmbStockCategory.Enabled = true;
+            dtpStockAdded.Enabled = true;
+            dtpStockModified.Enabled = true;
+            txtQuantity.ReadOnly = false; // Allow quantity to be editable
+            btnSaveStock.Visible = true;
         }
+
+
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int selectedRowIndex = e.RowIndex;
-            if (selectedRowIndex >= 0)
+            if (selectedRowIndex >= 0) // Ensure a valid row is clicked
             {
-                // Populate fields when a row is clicked
-                txtStockInName.Text = dataGridView1.Rows[selectedRowIndex].Cells["name"].Value.ToString();
-                string categoryName = dataGridView1.Rows[selectedRowIndex].Cells["category"].Value.ToString();
-
-                // Find the corresponding sr_no for the category name
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                try
                 {
-                    string query = "SELECT sr_no FROM category WHERE name = @categoryName";
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@categoryName", categoryName);
-                    conn.Open();
+                    // Populate fields when a row is clicked
+                    txtStockInName.Text = dataGridView1.Rows[selectedRowIndex].Cells["name"].Value.ToString();
+                    string categoryName = dataGridView1.Rows[selectedRowIndex].Cells["category"].Value.ToString();
+                    txtQuantity.Text = dataGridView1.Rows[selectedRowIndex].Cells["quantity"].Value.ToString();
+                    dtpStockAdded.Value = Convert.ToDateTime(dataGridView1.Rows[selectedRowIndex].Cells["date_added"].Value);
+                    dtpStockModified.Value = Convert.ToDateTime(dataGridView1.Rows[selectedRowIndex].Cells["date_modified"].Value);
 
-                    object result = cmd.ExecuteScalar();
-                    if (result != null)
+                    // Make fields read-only
+                    txtStockInName.ReadOnly = true;
+                    cmbStockCategory.Enabled = false;
+                    dtpStockAdded.Enabled = false;
+                    dtpStockModified.Enabled = false;
+
+                    // Find the corresponding sr_no for the category name
+                    using (MySqlConnection conn = new MySqlConnection(connectionString))
                     {
-                        int categorySrNo = Convert.ToInt32(result);
-                        cmbStockCategory.SelectedValue = categorySrNo;  // Set selected category sr_no
+                        string query = "SELECT sr_no FROM category WHERE name = @categoryName";
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@categoryName", categoryName);
+                        conn.Open();
+
+                        object result = cmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            int categorySrNo = Convert.ToInt32(result);
+                            cmbStockCategory.SelectedValue = categorySrNo; // Set selected category by sr_no
+                        }
+                        else
+                        {
+                            cmbStockCategory.SelectedIndex = -1; // If category not found, reset combo box
+                        }
                     }
-                    else
-                    {
-                        cmbStockCategory.SelectedIndex = -1;  // If category not found, reset combo box
-                    }
+
+                    // Allow only quantity to be editable
+                    txtQuantity.ReadOnly = false;
+
+                    // Hide the btnSaveStock button
+                    btnSaveStock.Visible = false;
                 }
-
-                txtQuantity.Text = dataGridView1.Rows[selectedRowIndex].Cells["quantity"].Value.ToString();
-                dtpStockAdded.Value = Convert.ToDateTime(dataGridView1.Rows[selectedRowIndex].Cells["date_added"].Value);
-                dtpStockModified.Value = Convert.ToDateTime(dataGridView1.Rows[selectedRowIndex].Cells["date_modified"].Value);
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred while populating data: " + ex.Message);
+                }
             }
         }
 
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            // Optionally handle cell content clicks if needed
-        }
+
+
+        //private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        //{
+        //    // Optionally handle cell content clicks if needed
+        //}
 
         // Call DisplayData and LoadCategories when the user control is loaded
         private void StockManagement_Load(object sender, EventArgs e)
@@ -363,6 +388,16 @@ namespace DarsBBQ
         }
 
         private void timer1_Tick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtStockInName_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
